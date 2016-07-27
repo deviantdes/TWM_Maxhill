@@ -948,38 +948,50 @@ Public Class TWM_Maxhill
 
             ARMarkUp = GetMarkup(oAP.DocDate)
 
-            oUserFields = oAR.UserFields
-            oFields = oUserFields.Fields
-            ReDim TxtName(oFields.Count)
-            ii = 0
-            For Each oField In oFields
-                TxtName(ii) = oField.Name
-                Select Case TxtName(ii)
-                    Case "U_TWMSCDBN"
-                        oAR.UserFields.Fields.Item("U_TWMSCDBN").Value = vCmp.CompanyDB
-                    Case "U_TWMBPR"
-                        oAR.UserFields.Fields.Item("U_TWMBPR").Value = oAP.CardCode
-                    Case "U_TWMSDER"
-                        oAR.UserFields.Fields.Item("U_TWMSDER").Value = oAP.DocEntry
-                    Case "U_TWMSDNR"
-                        oAR.UserFields.Fields.Item("U_TWMSDNR").Value = oAP.DocNum
-                    Case "U_TWMTDER", "U_TWMTDNR"
-                        'Do Nothing
-                    Case Else
-                        If UDFCheck(oAP.UserFields.Fields, TxtName(ii)) = True Then
-                            oAR.UserFields.Fields.Item(TxtName(ii)).Value = oAP.UserFields.Fields.Item(TxtName(ii)).Value
-                        End If
-                End Select
-                ii = ii + 1
-            Next oField
+            For i As Integer = 0 To oAR.UserFields.Fields.Count - 1
+                If oAR.UserFields.Fields.Item(i).Name.ToString() <> "U_TWMTDER" And oAR.UserFields.Fields.Item(i).Name.ToString() <> "U_TWMTDNR" Then
+                    oAR.UserFields.Fields.Item(i).Value = oAP.UserFields.Fields.Item(i).Value
+                End If
+            Next i
+
+            oAR.UserFields.Fields.Item("U_TWMSCDBN").Value = vCmp.CompanyDB
+            oAR.UserFields.Fields.Item("U_TWMBPR").Value = oAP.CardCode
+            oAR.UserFields.Fields.Item("U_TWMSDER").Value = oAP.DocEntry
+            oAR.UserFields.Fields.Item("U_TWMSDNR").Value = oAP.DocNum
+
+            'oUserFields = oAR.UserFields
+            'oFields = oUserFields.Fields
+            'ReDim TxtName(oFields.Count)
+            'ii = 0
+            'For Each oField In oFields
+            '    TxtName(ii) = oField.Name
+            '    Select Case TxtName(ii)
+            '        Case "U_TWMSCDBN"
+            '            oAR.UserFields.Fields.Item("U_TWMSCDBN").Value = vCmp.CompanyDB
+            '        Case "U_TWMBPR"
+            '            oAR.UserFields.Fields.Item("U_TWMBPR").Value = oAP.CardCode
+            '        Case "U_TWMSDER"
+            '            oAR.UserFields.Fields.Item("U_TWMSDER").Value = oAP.DocEntry
+            '        Case "U_TWMSDNR"
+            '            oAR.UserFields.Fields.Item("U_TWMSDNR").Value = oAP.DocNum
+            '        Case "U_TWMTDER", "U_TWMTDNR"
+            '            'Do Nothing
+            '        Case Else
+            '            If UDFCheck(oAP.UserFields.Fields, TxtName(ii)) = True Then
+            '                oAR.UserFields.Fields.Item(TxtName(ii)).Value = oAP.UserFields.Fields.Item(TxtName(ii)).Value
+            '            End If
+            '    End Select
+            '    ii = ii + 1
+            'Next oField
+
             '@@@ Header Filler END @@@
 
             '@@@ Detail Filler Start @@@
             If oAR.DocType = SAPbobsCOM.BoDocumentTypes.dDocument_Items Then
 
-                Dim oRS As SAPbobsCOM.Recordset = oCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
-                Dim fieldsquery As String = "SELECT 'U_' + AliasID FieldName FROM CUFD WHERE TableID = 'INV1'"
-                oRS.DoQuery(fieldsquery)
+                'Dim oRS As SAPbobsCOM.Recordset = oCompany.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset)
+                'Dim fieldsquery As String = "SELECT 'U_' + AliasID FieldName FROM CUFD WHERE TableID = 'INV1'"
+                'oRS.DoQuery(fieldsquery)
 
                 For rowcount = 0 To oAP.Lines.Count - 1
                     oAP.Lines.SetCurrentLine(rowcount)
@@ -1013,7 +1025,7 @@ Public Class TWM_Maxhill
                         ii = 0
                         ' add user-defined fields
 
-                        For i As Integer = 0 To oAR.Lines.UserFields.Fields.Count-1
+                        For i As Integer = 0 To oAR.Lines.UserFields.Fields.Count - 1
                             oAR.Lines.UserFields.Fields.Item(i).Value = oAP.Lines.UserFields.Fields.Item(i).Value
                         Next i
                         oAR.Lines.UserFields.Fields.Item("U_TWMICBD").Value = oAP.DocEntry.ToString
@@ -1082,24 +1094,30 @@ Public Class TWM_Maxhill
                         oAR.Lines.Price = oAP.Lines.Price
                         oAR.Lines.DiscountPercent = oAP.Lines.DiscountPercent
                         oAR.Lines.LineTotal = oAP.Lines.LineTotal
+
+                        For i As Integer = 0 To oAR.Lines.UserFields.Fields.Count - 1
+                            oAR.Lines.UserFields.Fields.Item(i).Value = oAP.Lines.UserFields.Fields.Item(i).Value
+                        Next i
+
                         oAR.Lines.UserFields.Fields.Item("U_TWMICBD").Value = oAP.DocEntry.ToString
                         oAR.Lines.UserFields.Fields.Item("U_TWMICBT").Value = "22"
                         oAR.Lines.UserFields.Fields.Item("U_TWM_SS").Value = "1"
                         oAR.Lines.UserFields.Fields.Item("U_TWMICBL").Value = rowcount.ToString
                         ' add user-defined fields
-                        oUserFields = oAR.Lines.UserFields
-                        oFields = oUserFields.Fields
-                        ii = 0
-                        ReDim TxtName(oFields.Count)
-                        For Each oField In oFields
-                            TxtName(ii) = oField.Name
-                            If UDFCheck(oAP.Lines.UserFields.Fields, TxtName(ii)) Then
-                                If TxtName(ii) <> "U_TWMICBD" Or TxtName(ii) <> "U_TWMICBT" Or TxtName(ii) <> "U_TWM_SS" Then
-                                    oAR.Lines.UserFields.Fields.Item(TxtName(ii)).Value = oAP.Lines.UserFields.Fields.Item(TxtName(ii)).Value
-                                End If
-                            End If
-                            ii = ii + 1
-                        Next oField
+
+                        'oUserFields = oAR.Lines.UserFields
+                        'oFields = oUserFields.Fields
+                        'ii = 0
+                        'ReDim TxtName(oFields.Count)
+                        'For Each oField In oFields
+                        '    TxtName(ii) = oField.Name
+                        '    If UDFCheck(oAP.Lines.UserFields.Fields, TxtName(ii)) Then
+                        '        If TxtName(ii) <> "U_TWMICBD" Or TxtName(ii) <> "U_TWMICBT" Or TxtName(ii) <> "U_TWM_SS" Then
+                        '            oAR.Lines.UserFields.Fields.Item(TxtName(ii)).Value = oAP.Lines.UserFields.Fields.Item(TxtName(ii)).Value
+                        '        End If
+                        '    End If
+                        '    ii = ii + 1
+                        'Next oField
                     End If
                 Next
             End If
